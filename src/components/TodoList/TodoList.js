@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
 import './TodoList.css';
 
+
 const TodoList = () => {
     const [tasks, setTasks] = useState([
-        { id: 1, text: 'Aprender React', completed: false },
-        { id: 2, text: 'Construir una App', completed: false },
-        { id: 3, text: 'Modularizar componentes', completed: false }
+        
     ]);
 
     const [inputValue, setInputValue] = useState('');
@@ -67,12 +66,12 @@ const TodoList = () => {
                                 title="Marcar completada"
                             >
                                 {task.completed ? (
-                                    // Checked SVG
+                                    // marcar  SVG
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                                         <path d="M20 6L9 17L4 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                     </svg>
                                 ) : (
-                                    // Unchecked circle SVG
+                                    // desmarcar circle SVG
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                                         <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2" />
                                     </svg>
