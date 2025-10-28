@@ -1,36 +1,62 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react'; // <-- Añade useEffect
+import { db } from '../../firebaseConfig'; // <-- Importa nuestra config
+import { collection, query, orderBy, onSnapshot, addDoc, doc, updateDoc, deleteDoc, serverTimestamp } from "firebase/firestore"; // <-- Importa funciones de Firestore
 import './TodoList.css';
+import TodoItem from '../TodoItem/TodoItem';
 
 
 const TodoList = () => {
-    const [tasks, setTasks] = useState([
-        
-    ]);
+    const [tasks, setTasks] = useState([]);
 
     const [inputValue, setInputValue] = useState('');
 
-    const handleAddTask = (e) => {
+    useEffect(() => {
+        const collectionRef = collection(db, "tasks");
+
+        // 2. Creamos una consulta (query) para ordenar las tareas por fecha
+        const q = query(collectionRef, orderBy("createdAt", "asc"));
+
+        // 3. onSnapshot es el ¡ESCUCHADOR EN TIEMPO REAL!
+        // Se dispara una vez al inicio y luego CADA VEZ que los datos cambian
+        const unsubscribe = onSnapshot(q, (querySnapshot) => {
+            const newTasks = [];
+            querySnapshot.forEach((doc) => {
+                newTasks.push({
+                    ...doc.data(),
+                    id: doc.id // El ID del documento es importante
+                });
+            });
+            setTasks(newTasks); // Actualizamos nuestro estado de React
+        });
+        return () => unsubscribe(); // Limpiamos el escuchador al desmontar el componente
+    }, []);
+
+    const handleAddTask = async (e) => {
         e.preventDefault();
         if (inputValue.trim() === '') return;
 
-        const newTask = {
-            id: Date.now(),
+        await addDoc(collection(db, "tasks"), {
             text: inputValue,
-            completed: false
-        };
+            isCompleted: false,
+            createdAt: serverTimestamp()
+        });
 
-        setTasks([...tasks, newTask]);
         setInputValue('');
     };
 
-    const handleToggleComplete = (id) => {
-        setTasks(tasks.map(task =>
-            task.id === id ? { ...task, completed: !task.completed } : task
-        ));
+    // Now receives the whole task object (we bind it when rendering TodoItem)
+    const handleToggleComplete = async (task) => {
+        if (!task || !task.id) return;
+        const taskRef = doc(db, "tasks", task.id);
+        const current = task.isCompleted ?? task.isComplete ?? task.completed ?? false;
+        await updateDoc(taskRef, {
+            isCompleted: !current
+        });
     };
 
-    const handleDeleteTask = (id) => {
-        setTasks(tasks.filter(task => task.id !== id));
+    const handleDeleteTask = async (id) => {
+        const taskRef = doc(db, "tasks", id);
+        await deleteDoc(taskRef);
     };
 
     return (
@@ -50,51 +76,13 @@ const TodoList = () => {
 
             <ul className="todo-list">
                 {tasks.map(task => (
-                    <li key={task.id} className={`todo-item ${task.completed ? 'completed' : ''}`}>
-                        <span
-                            className="todo-text"
-                            onClick={() => handleToggleComplete(task.id)}
-                        >
-                            {task.text}
-                        </span>
-                        <div className="todo-actions">
-                            <button
-                                type="button"
-                                className={`icon-btn ${task.completed ? 'checked' : ''}`}
-                                onClick={() => handleToggleComplete(task.id)}
-                                aria-label={task.completed ? 'Marcar como no completada' : 'Marcar como completada'}
-                                title="Marcar completada"
-                            >
-                                {task.completed ? (
-                                    // marcar  SVG
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                        <path d="M20 6L9 17L4 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                    </svg>
-                                ) : (
-                                    // desmarcar circle SVG
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                        <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2" />
-                                    </svg>
-                                )}
-                            </button>
-                            <button
-                                type="button"
-                                className="icon-btn delete"
-                                onClick={() => handleDeleteTask(task.id)}
-                                aria-label="Eliminar tarea"
-                                title="Eliminar tarea"
-                            >
-                                {/* Trash SVG */}
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                    <path d="M3 6h18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                    <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                    <path d="M10 11v6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                    <path d="M14 11v6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                </svg>
-                            </button>
-                        </div>
-                    </li>
+                  <TodoItem 
+                    key={task.id}
+                    task={task}
+                    // Pasa la función correctamente: bind the task object
+                    onToggleComplete={() => handleToggleComplete(task)}
+                    onDeleteTask={handleDeleteTask}
+                  />
                 ))}
             </ul>
         </div>

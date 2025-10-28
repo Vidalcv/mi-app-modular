@@ -5,7 +5,6 @@ const Header = () => {
   return (
     <header className="app-header">
       <h1>Mi Aplicación Modular</h1>
-      <image></image>
     </header>
   );
 };

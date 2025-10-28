@@ -12,7 +12,6 @@ function App() {
     <div className={`App ${theme}`}>
       <Header/>
       <ThemeSwitcher/>
-      <Welcome name="Desarrollador"/>
       <main>
         <TodoList/>
       </main>
