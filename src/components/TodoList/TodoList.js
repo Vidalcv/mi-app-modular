@@ -61,7 +61,7 @@ const TodoList = () => {
             await addDoc(collection(db, 'taskHistory'), {
                 taskId: newTaskRef.id,
                 text: inputValue,
-                event: 'created',
+                event: 'creada',
                 eventAt: serverTimestamp()
             });
         } catch (err) {
@@ -71,7 +71,6 @@ const TodoList = () => {
         setInputValue('');
     };
 
-    // Now receives the whole task object (we bind it when rendering TodoItem)
     const handleToggleComplete = async (task) => {
         if (!task || !task.id) return;
         const taskRef = doc(db, "tasks", task.id);
@@ -81,12 +80,12 @@ const TodoList = () => {
             isCompleted: newState
         });
 
-        // Registrar evento de completado / reabierto
+        // Registrar evento de completado
         try {
             await addDoc(collection(db, 'taskHistory'), {
                 taskId: task.id,
                 text: task.text ?? '',
-                event: newState ? 'completed' : 'reopened',
+                event: newState ? 'completada' : 'reabierta',
                 eventAt: serverTimestamp()
             });
         } catch (err) {
@@ -106,7 +105,7 @@ const TodoList = () => {
             await addDoc(collection(db, 'taskHistory'), {
                 taskId: id,
                 text,
-                event: 'deleted',
+                event: 'eliminada',
                 eventAt: serverTimestamp()
             });
 
@@ -137,7 +136,7 @@ const TodoList = () => {
                   <TodoItem 
                     key={task.id}
                     task={task}
-                    // Pasa la función correctamente: bind the task object
+                    // Pasa la función correctamente
                     onToggleComplete={() => handleToggleComplete(task)}
                     onDeleteTask={handleDeleteTask}
                   />
