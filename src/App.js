@@ -10,8 +10,9 @@ function App() {
   const {theme} = useContext(ThemeContext);// Usar el contexto del tema
   return (
     <div className={`App ${theme}`}>
-      <Header/>
+      <Header>
       <ThemeSwitcher/>
+      </Header>
       <main>
         <TodoList/>
       </main>

@@ -1,6 +1,70 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+
 .app-header{
     background-color: #282c34;
-    padding: 20px;
+    padding: 12px 20px;
     color: white;
-    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.app-title{
+    margin: 0;
+    font-family: 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+    font-weight: 700;
+    font-size: 1.5rem;
+    letter-spacing: 0.6px;
+    /* Gradient text */
+    background: linear-gradient(90deg, #7b61ff 0%, #00c6ff 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-shadow: 0 1px 0 rgba(0,0,0,0.25);
+}
+
+.header-actions{
+    display: flex;
+    align-items: center;
+}
+
+/* Theme switcher button styles */
+.theme-switcher{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 40px;
+    height: 40px;
+    padding: 6px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: transparent;
+    color: white;
+    cursor: pointer;
+    transition: background-color 150ms ease, transform 120ms ease;
+}
+
+.theme-switcher:hover{
+    background-color: rgba(255,255,255,0.04);
+    transform: translateY(-1px);
+}
+
+.theme-switcher svg{
+    display: block;
+}
+
+/* Accessibility: visually hidden but available to screen readers */
+.sr-only{
+    position: absolute !important;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0,0,0,0);
+    white-space: nowrap;
+    border: 0;
 }

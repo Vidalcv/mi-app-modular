@@ -146,3 +146,115 @@ gap: 8px;
 .icon-btn.delete:hover {
 color: #e63946;
 }
+
+/* Dark mode overrides when parent .App has the .dark class */
+.App.dark .todo-container {
+	background: #121417; /* very dark card */
+	box-shadow: 0 6px 20px rgba(0,0,0,0.6);
+}
+
+.App.dark .todo-title {
+	color: #e6eef8;
+}
+
+.App.dark .todo-input {
+	background-color: #1b1f23;
+	border: 1px solid rgba(255,255,255,0.06);
+	color: #e6eef8;
+}
+
+.App.dark .todo-input:focus {
+	border-color: rgba(100, 149, 237, 0.9);
+	box-shadow: 0 0 0 3px rgba(100, 149, 237, 0.08);
+}
+
+.App.dark .todo-add-btn {
+	background-color: #2b6cb0;
+}
+
+.App.dark .todo-add-btn:hover {
+	background-color: #244e8a;
+}
+
+.App.dark .todo-item {
+	background: #0f1417;
+}
+
+.App.dark .todo-item:hover {
+	background-color: #132027;
+}
+
+.App.dark .todo-text {
+	color: #dbeafe;
+}
+
+.App.dark .completed .todo-text {
+	color: #7b8a92;
+}
+
+/* Icon buttons: ensure icons use currentColor so they adapt to theme */
+.App.dark .icon-btn {
+	color: #dbeafe;
+}
+
+.App.dark .icon-btn.delete:hover {
+	color: #ff7b7b;
+}
+
+.history-row {
+	display: flex;
+	justify-content: center;
+	margin-top: 12px;
+}
+
+.history-toggle {
+	background: transparent;
+	border: 1px solid rgba(0,0,0,0.08);
+	padding: 8px 12px;
+	border-radius: 10px;
+	cursor: pointer;
+	color: #333;
+}
+
+.history-panel {
+	margin-top: 12px;
+	max-width: 560px;
+	margin-left: auto;
+	margin-right: auto;
+	background: #f4f6f8;
+	border-radius: 12px;
+	padding: 12px;
+	box-shadow: 0 6px 18px rgba(12, 38, 63, 0.04);
+}
+
+.history-list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.history-item {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 8px 6px;
+	border-bottom: 1px solid rgba(0,0,0,0.04);
+}
+
+.history-item:last-child { border-bottom: none; }
+
+.history-meta { display:flex; gap:12px; align-items:center; }
+.history-type { font-weight:700; text-transform:capitalize; padding:4px 8px; border-radius:8px; font-size:12px; }
+.history-type.created { background: linear-gradient(90deg,#e6f4ff,#d9f7ee); color:#155; }
+.history-type.completed { background: linear-gradient(90deg,#e6fff4,#e6f8ff); color:#0a6; }
+.history-type.deleted { background: linear-gradient(90deg,#fff1f1,#fff5e6); color:#c33; }
+.history-text { color:#333; max-width:360px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.history-date { color:#666; font-size:12px; }
+
+/* Dark variants */
+.App.dark .history-panel { background: #0b1113; box-shadow: none; }
+.App.dark .history-toggle { color: #e6eef8; border-color: rgba(255,255,255,0.08); }
+.App.dark .history-item { border-bottom-color: rgba(255,255,255,0.03); }
+.App.dark .history-text { color: #dbeafe; }
+.App.dark .history-date { color: #9fb0c6; }
+

@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react'; // <-- Añade useEffect
 import { db } from '../../firebaseConfig'; // <-- Importa nuestra config
-import { collection, query, orderBy, onSnapshot, addDoc, doc, updateDoc, deleteDoc, serverTimestamp } from "firebase/firestore"; // <-- Importa funciones de Firestore
+import { collection, query, orderBy, onSnapshot, addDoc, doc, updateDoc, deleteDoc, getDoc, serverTimestamp } from "firebase/firestore"; // <-- Importa funciones de Firestore
 import './TodoList.css';
 import TodoItem from '../TodoItem/TodoItem';
 
 
 const TodoList = () => {
     const [tasks, setTasks] = useState([]);
+    const [history, setHistory] = useState([]);
+    const [showHistory, setShowHistory] = useState(false);
 
     const [inputValue, setInputValue] = useState('');
 
@@ -31,15 +33,40 @@ const TodoList = () => {
         return () => unsubscribe(); // Limpiamos el escuchador al desmontar el componente
     }, []);
 
+    // Escuchador para el historial de tareas (creadas, completadas, eliminadas)
+    useEffect(() => {
+        const historyRef = collection(db, 'taskHistory');
+        const qh = query(historyRef, orderBy('eventAt', 'desc'));
+        const unsubHistory = onSnapshot(qh, (qs) => {
+            const items = [];
+            qs.forEach((doc) => items.push({ id: doc.id, ...doc.data() }));
+            setHistory(items);
+        });
+        return () => unsubHistory();
+    }, []);
+
     const handleAddTask = async (e) => {
         e.preventDefault();
         if (inputValue.trim() === '') return;
 
-        await addDoc(collection(db, "tasks"), {
+        // 1) Crear la tarea
+        const newTaskRef = await addDoc(collection(db, "tasks"), {
             text: inputValue,
             isCompleted: false,
             createdAt: serverTimestamp()
         });
+
+        // 2) Registrar evento en el historial
+        try {
+            await addDoc(collection(db, 'taskHistory'), {
+                taskId: newTaskRef.id,
+                text: inputValue,
+                event: 'created',
+                eventAt: serverTimestamp()
+            });
+        } catch (err) {
+            console.error('No se pudo registrar el historial de creación:', err);
+        }
 
         setInputValue('');
     };
@@ -49,14 +76,45 @@ const TodoList = () => {
         if (!task || !task.id) return;
         const taskRef = doc(db, "tasks", task.id);
         const current = task.isCompleted ?? task.isComplete ?? task.completed ?? false;
+        const newState = !current;
         await updateDoc(taskRef, {
-            isCompleted: !current
+            isCompleted: newState
         });
+
+        // Registrar evento de completado / reabierto
+        try {
+            await addDoc(collection(db, 'taskHistory'), {
+                taskId: task.id,
+                text: task.text ?? '',
+                event: newState ? 'completed' : 'reopened',
+                eventAt: serverTimestamp()
+            });
+        } catch (err) {
+            console.error('No se pudo registrar el historial de completado:', err);
+        }
     };
 
     const handleDeleteTask = async (id) => {
         const taskRef = doc(db, "tasks", id);
-        await deleteDoc(taskRef);
+        try {
+            // Obtener la tarea antes de borrarla para registrar su texto
+            const snap = await getDoc(taskRef);
+            const data = snap.exists() ? snap.data() : null;
+            const text = data?.text ?? '';
+
+            // Registrar evento de borrado
+            await addDoc(collection(db, 'taskHistory'), {
+                taskId: id,
+                text,
+                event: 'deleted',
+                eventAt: serverTimestamp()
+            });
+
+            // Finalmente borrar
+            await deleteDoc(taskRef);
+        } catch (err) {
+            console.error('Error al borrar la tarea o registrar el historial:', err);
+        }
     };
 
     return (
@@ -85,6 +143,33 @@ const TodoList = () => {
                   />
                 ))}
             </ul>
+
+            {/* Botón para alternar historial */}
+            <div className="history-row">
+                <button className="history-toggle" type="button" onClick={() => setShowHistory(s => !s)}>
+                    {showHistory ? 'Ocultar historial' : `Mostrar historial (${history.length})`}
+                </button>
+            </div>
+
+            {showHistory && (
+                <div className="history-panel">
+                    {history.length === 0 ? (
+                        <div className="history-empty">No hay eventos aún.</div>
+                    ) : (
+                        <ul className="history-list">
+                            {history.map(h => (
+                                <li key={h.id} className="history-item">
+                                    <div className="history-meta">
+                                        <span className={`history-type ${h.event}`}>{h.event}</span>
+                                        <span className="history-text">{h.text}</span>
+                                    </div>
+                                    <div className="history-date">{h.eventAt && h.eventAt.toDate ? h.eventAt.toDate().toLocaleString() : ''}</div>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                </div>
+            )}
         </div>
     );
 };
